@@ -4,7 +4,7 @@
  * cloud filing, and generates sanitized CSVs for Adobe Illustrator variable data.
  */
 // ============================================================
-//  ⚙️  Global Steeings (Anonymized: Using generic variables and placeholders)
+//  ⚙️  Global Settings (Anonymized: Using generic variables and placeholders)
 // ============================================================
 const CONFIG = {
   targetSheet:    "Operations_Dashboard",
@@ -43,7 +43,7 @@ function processCurrentRows() {
   const sheet = ss.getActiveSheet();
 
   if (sheet.getName() !== CONFIG.targetSheet) {
-    SpreadsheetApp.getUi().alert(`❌ Please run this from the "${CONFIG.targetSheet}" sheet.``);
+    SpreadsheetApp.getUi().alert(`❌ Please run this from the "${CONFIG.targetSheet}" sheet.`);
     return;
   }
 
