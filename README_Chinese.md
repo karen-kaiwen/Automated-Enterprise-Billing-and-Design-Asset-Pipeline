@@ -55,8 +55,7 @@
                                                      ▼
                                         ┌────────────────────────┐
                                         │  Illustrator CSV       │
-                                        │  AI_Asset_Data_        │
-                                        │  MMDD_HHmm.csv         │
+                                        │ AI_Final_MMDD_HHmm.csv │
                                         └────────────────────────┘
 ```
 
@@ -99,6 +98,7 @@
 - 一個 Google Drive 父資料夾，用於接收自動建立的子資料夾
 - 與 `Code.gs` 並列部署的 `Sidebar.html` 側欄檔案（郵遞區號查詢功能必要）
 - Adobe Illustrator（含 Data Merge 面板，用於匯入匯出的 CSV）
+- 首次執行時，Apps Script 將要求以下 OAuth 授權範圍：  Google Sheets、Google Drive，以及外部網址擷取（郵遞區號查詢功能）
 
 ---
 
@@ -159,7 +159,7 @@ const CONFIG = {
 
 1. 選取要匯出的資料列（**不含標題列**）。
 2. 執行 **🛠️ Automation Engine → Export: Illustrator CSV (Clean Text)**。
-3. 下載對話框將出現，提供含時間戳記的檔案（例如 `AI_Asset_Data_0420_1430.csv`），可直接匯入 Illustrator 的 Data Merge 面板。
+3. 下載對話框將出現，提供含時間戳記的檔案（例如 `AI_Final_0420_1430.csv`），可直接匯入 Illustrator 的 Data Merge 面板。
 
 ---
 
