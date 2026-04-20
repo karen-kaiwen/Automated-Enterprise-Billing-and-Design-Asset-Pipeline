@@ -1,6 +1,6 @@
 # Automated Enterprise Billing & Design Asset Pipeline
 
-An end-to-end Google Apps Script system Google Apps Script system for Google Workspace that automates record matching, Drive folder generation, and CSV export for Adobe Illustrator variable data printing.
+An end-to-end Google Apps Script system for Google Workspace that automates record matching, Drive folder generation, and CSV export for Adobe Illustrator variable data printing.
 
 ![Google Apps Script](https://img.shields.io/badge/Google_Apps_Script-4285F4?style=flat&logo=google&logoColor=white)
 ![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)
@@ -21,9 +21,9 @@ An end-to-end Google Apps Script system Google Apps Script system for Google Wor
 
 ## Overview
 
-This GAS-based pipeline automates three connected workflows inside Google Workspace: matching records across spreadsheets, auto-generating Drive folder structure with manifest files, and exporting sanitized CSVs formateted for Adobe Illustrator's Data Merge (variable data printing) panel.
+This GAS-based pipeline automates three connected workflows inside Google Workspace: matching records across spreadsheets, auto-generating Drive folder structure with manifest files, and exporting sanitized CSVs formatted for Adobe Illustrator's Data Merge (variable data printing) panel.
 
-It is designed for billing or asset-issuance opperations where each record requires a unique sequential ID, a dedicated cloud folder, and a corresponding print-ready data row.
+It is designed for billing or asset-issuance operations where each record requires a unique sequential ID, a dedicated cloud folder, and a corresponding print-ready data row.
 
 ## System Architecture
 
@@ -50,18 +50,20 @@ It is designed for billing or asset-issuance opperations where each record requi
                                                      ▼
                                         ┌────────────────────────┐
                                         │  Illustrator CSV       │
-                                        │  Export_AI_Variables_  │
+                                        │  AI_Final_  │
                                         │  MMDD_HHmm.csv         │
                                         └────────────────────────┘
 ```
- 
+
+> The pipeline is triggered manually via the custom menu in Google Sheets.
+> All three data sources must be configured in CONFIG before first use.
 ---
 
 ## Technical Challenges & Solutions
 
 - The Scientific Notation Trap (Data Integrity)
   - **The Problem**: Standard exports of long Account IDs (eg., 123456...) are often misinterpreted by software as numbers, converting them into scientific notation (1.23E+09), which breaks barcode scanning.
-  - **The Solution**: Implemented `.getDisplayvalues()` throughout the pipeline. This captures data as " What You See Is What You Get" strings, ensuring 100% data fidelity for downstream scanners.
+  - **The Solution**: Implemented `.getDisplayValues()` throughout the pipeline. This captures data as " What You See Is What You Get" strings, ensuring 100% data fidelity for downstream scanners.
 - Cross-Platform Encoding Compatibility (UTF-8 BOM)
   - **The Problem**: Adobe Illustrator is highly sensitive to CSV encoding. Traditional UTF-8 files often cause character corruption or "Invalid Library" errors.
   - **The Solution**: Injected a UTF-8 BOM (\ufeff) into the CSV headers. This acts as a "digital handshake" for Adobe software, ensuring seamless import of multi-byte characters (Traditional Chinese).
@@ -70,15 +72,15 @@ It is designed for billing or asset-issuance opperations where each record requi
   - **The Solution**: Leveraged In-memory Indexing (Hash Maps). This shifted search complexity from O(n) to O(1), resulting in exponential performance gains for large datasets.
 ---
 ## Features 
-| Feature | Description | 說明 (中文) |
-|---|---|---|
-| 🚀 **One-Click Sync** | Processes selected rows, assigns serial IDs, and populates all related fields automatically | 一鍵處理選取列，自動指派流水號並填入所有關聯欄位 |
-| 🗂️ **Auto Cloud Archiving** | Creates a dedicated Google Drive folder and manifest spreadsheet per record | 每筆記錄自動建立獨立的 Drive 資料夾與清冊試算表 |
-| 🔗 **Cross-Sheet Data Matching** | Replaces VLOOKUP chains with an in-memory HashMap for O(1) lookup performance | 以記憶體 HashMap 取代 VLOOKUP 鏈，達成 O(1) 查找效能 |
-| 📮 **ZipCode Lookup Sidebar** | Embedded HTML sidebar for real-time postal code lookup via external API | 嵌入式 HTML 側欄，透過外部 API 即時查詢郵遞區號 |
-| 📥 **Illustrator CSV Export** | Generates sanitized, UTF-8 BOM encoded CSV matched to AI Variables Panel schema | 產出經過清理、含 UTF-8 BOM 的 CSV，對應 AI 變數面板欄位結構 |
-| 👤 **Operator Tracking** | Auto-identifies the current user by login and maps to a display name | 自動識別操作者登入帳號並對應顯示名稱 |
-| 💳 **Payment Route Resolver** | Dynamically routes delivery info (email or physical mail) based on client type | 依客戶類型動態判斷寄送方式（電子郵件 / 實體郵寄） |
+| Feature | Description | 
+|---|---|
+| 🚀 **One-Click Sync** | Processes selected rows, assigns serial IDs, and populates all related fields automatically | 
+| 🗂️ **Auto Cloud Archiving** | Creates a dedicated Google Drive folder and manifest spreadsheet per record |
+| 🔗 **Cross-Sheet Data Matching** | Replaces VLOOKUP chains with an in-memory HashMap for O(1) lookup performance |
+| 📮 **ZipCode Lookup Sidebar** | Embedded HTML sidebar for real-time postal code lookup via external API |
+| 📥 **Illustrator CSV Export** | Generates sanitized, UTF-8 BOM encoded CSV matched to AI Variables Panel schema |
+| 👤 **Operator Tracking** | Auto-identifies the current user by login and maps to a display name |
+| 💳 **Payment Route Resolver** | Dynamically routes delivery info (email or physical mail) based on client type |
 ---
 
 ## Prerequisites
@@ -88,6 +90,7 @@ It is designed for billing or asset-issuance opperations where each record requi
 - A parent Google Drive folder to receive auto-generated subfolders
 - A sidebar HTML file named `Sidebar.html` deployed alongside `Code.gs`  (required for the ZipCode Lookup feature)
 - Adobe Illustrator with Data Merge panel (for consuming the exported CSV)
+- On first run, Apps Script will request the following OAuth scopes:  Google Sheets, Google Drive, and external URL fetch (for ZipCode lookup)
 
 ## Setup & Configuration
 
@@ -152,7 +155,7 @@ The script will:
 1. Select the data rows to export — **do not include the header row**.
 2. Run **🛠️ Automation Engine → Export: Illustrator CSV (Clean Text)**.
 3. A download dialog will appear with a timestamped file
-   (e.g., `AI_Asset_Data_0420_1430.csv`) ready for Illustrator's Data Merge panel.
+   (e.g., `AI_Final_0420_1430.csv`) ready for Illustrator's Data Merge panel.
 
 ---
 
