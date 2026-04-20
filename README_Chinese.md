@@ -46,11 +46,11 @@
 └─────────────────────────────┘        └──────────────┬───────────────┘
                                                       │ processCurrentRows()
                                                       ▼
-                                         ┌────────────────────────┐
-                                         │  Google 雲端硬碟        │
-                                         │  INV-2026-XXXX_Name/   │
-                                         │  └── XXXX_Manifest.xlsx│
-                                         └────────────────────────┘
+                                 ┌───────────────────────────────────────┐
+                                 │  Google 雲端硬碟                       │
+                                 │  123456XXXX_Name/                     │
+                                 │  └123456XXXX_Name(XX in total).xlsx   │
+                                 └───────────────────────────────────────┘
                                                      │
                                                      ▼
                                         ┌────────────────────────┐
@@ -115,7 +115,7 @@ const CONFIG = {
   parentFolderId: "YOUR_DRIVE_FOLDER_ID",      // Drive 資料夾 ID（從網址列取得）
   externalSsId:   "YOUR_EXTERNAL_DATABASE_ID", // 外部資料庫的試算表 ID
   externalSheet:  "External_Response_Logs",    // 外部資料庫內的工作表名稱
-  idPrefix:       "INV-2026-",                 // 流水序號前綴
+  idPrefix:       "123456",                 // 流水序號前綴
   startSuffix:    1000,                        // 流水序號起始數字
   exportCols:     [0, 1, 2, 3, 4, 5, 6, 7, 8],// 清冊匯出的欄位索引（從 0 起算）
   userList: {
@@ -146,7 +146,7 @@ const CONFIG = {
 腳本將自動執行以下操作：
 - 指派流水序號，並以超連結形式連結至新建的 Drive 資料夾
 - 向 C～L 欄注入公式（跨表查找、金額加總、付款路由、狀態核取方塊）
-- 建立名為 `{序號}_{客戶名稱}` 的 Drive 子資料夾
+- 建立名為 `{ID}_{客戶名稱}(共 {N} 案)` 的 Drive 子資料夾
 - 在子資料夾內生成清冊試算表，包含篩選後的來源記錄與 `Total Amount` 加總列
 
 ### 📮 開啟：郵遞區號查詢側欄
