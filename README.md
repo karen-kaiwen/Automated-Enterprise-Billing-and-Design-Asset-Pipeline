@@ -41,17 +41,16 @@ It is designed for billing or asset-issuance operations where each record requir
 └─────────────────────────────┘        └──────────────┬───────────────┘
                                                       │ processCurrentRows()
                                                       ▼
-                                         ┌────────────────────────┐
-                                         │  Google Drive          │
-                                         │  INV-2026-XXXX_Name/   │
-                                         │  └── XXXX_Manifest.xlsx│
-                                         └────────────────────────┘
+                                 ┌───────────────────────────────────────┐
+                                 │  Google Drive                         │
+                                 │  123456XXXX_Name/                     │
+                                 │  └123456XXXX_Name(XX in total).xlsx   │
+                                 └───────────────────────────────────────┘
                                                      │
                                                      ▼
                                         ┌────────────────────────┐
                                         │  Illustrator CSV       │
-                                        │  AI_Final_  │
-                                        │  MMDD_HHmm.csv         │
+                                        │ AI_Final_MMDD_HHmm.csv │
                                         └────────────────────────┘
 ```
 
@@ -105,7 +104,7 @@ const CONFIG = {
   parentFolderId: "YOUR_DRIVE_FOLDER_ID",      // Drive folder ID (from the URL)
   externalSsId:   "YOUR_EXTERNAL_DATABASE_ID", // Spreadsheet ID of the external DB
   externalSheet:  "External_Response_Logs",    // Sheet name inside the external DB
-  idPrefix:       "INV-2026-",                 // Prefix for generated IDs
+  idPrefix:       "123456",                    // Prefix for generated IDs
   startSuffix:    1000,                        // Starting number for the ID suffix
   exportCols:     [0, 1, 2, 3, 4, 5, 6, 7, 8],// Column indices to include in manifest
   userList: {
@@ -139,7 +138,7 @@ The script will:
 - Assign a sequential ID and hyperlink it to the newly created Drive folder
 - Inject formulas into columns C–L (cross-sheet lookup, amount totals,
   payment routing, status checkboxes)
-- Create a Drive subfolder named `{ID}_{ClientName}`
+- Create a Drive subfolder named `{ID}_{Name}({N} in total)`
 - Generate a manifest spreadsheet inside it, with filtered source rows and
   a `Total Amount` summary row
 
