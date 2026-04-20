@@ -3,20 +3,19 @@
  * @Description: An End-to-End system for Google Workspace that automates data matching, 
  * cloud filing, and generates sanitized CSVs for Adobe Illustrator variable data.
  */
-
 // ============================================================
-//  ⚙️ 全域設定區 (已去識別化：使用通用變數與佔位符)
+//  ⚙️  Global Steeings (Anonymized: Using generic variables and placeholders)
 // ============================================================
 const CONFIG = {
-  targetSheet:    "Operations_Dashboard",     
-  sourceSheet:    "Central_Master_Database",  
-  parentFolderId: "YOUR_DRIVE_FOLDER_ID",     
+  targetSheet:    "Operations_Dashboard",
+  sourceSheet:    "Central_Master_Database",
+  parentFolderId: "YOUR_DRIVE_FOLDER_ID",
   externalSsId:   "YOUR_EXTERNAL_DATABASE_ID",
-  externalSheet:  "External_Response_Logs",   
-  idPrefix:       "INV-2026-",               
-  startSuffix:    1000,                       
+  externalSheet:  "External_Response_Logs",
+  idPrefix:       "INV-2026-",
+  startSuffix:    1000,
   exportCols:     [0, 1, 2, 3, 4, 5, 6, 7, 8],
-  userList: {                                 
+  userList: {
     "admin.user1": "Account Manager A",
     "admin.user2": "Project Specialist B",
     "admin.user3": "Operations Lead C",
@@ -25,7 +24,7 @@ const CONFIG = {
 };
 
 // ============================================================
-//  📌 選單系統
+//  📌  Menu system
 // ============================================================
 function onOpen() {
   SpreadsheetApp.getUi()
@@ -37,39 +36,37 @@ function onOpen() {
 }
 
 // ============================================================
-//  🚀 核心執行邏輯 (資料流自動化與雲端歸檔)
+//  🚀  Core Execution Logic (Data Flow Automation & Cloud Archiving)
 // ============================================================
 function processCurrentRows() {
   const ss    = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = ss.getActiveSheet();
 
   if (sheet.getName() !== CONFIG.targetSheet) {
-    SpreadsheetApp.getUi().alert(`❌ Please run this from the "${CONFIG.targetSheet}" sheet.`);
+    SpreadsheetApp.getUi().alert(`❌ Please run this from the "${CONFIG.targetSheet}" sheet.``);
     return;
   }
 
-  // 預先載入索引 Map (Memory Optimization)
-  const lookupMap = buildLookupMap();
+  // Pre-load index Map (Memory Optimization to replace traditional VLOOKUPs)
+  const lookupMap  = buildLookupMap();
   if (!lookupMap) return;
 
   const userName   = getCurrentUserName();
-  const sourceSheet = ss.getSheetByName(CONFIG.sourceSheet);
-  if (!sourceSheet) return;
-  const sourceData = sourceSheet.getDataRange().getValues();
+  const sourceData = ss.getSheetByName(CONFIG.sourceSheet).getDataRange().getValues();
   const sourceHeaders = sourceData[0];
 
-  const range   = sheet.getActiveRange();
+  const range    = sheet.getActiveRange();
   const startRow = range.getRow();
   const numRows  = range.getNumRows();
 
-  // 批次讀取 A、B 欄，優化 API 呼叫效率
-  const colAB     = sheet.getRange(startRow, 1, numRows, 2).getValues();
-  const colADisp  = sheet.getRange(startRow, 1, numRows, 1).getDisplayValues();
+  // Batch read columns A & B to minimize API calls and improve performance
+  const colAB    = sheet.getRange(startRow, 1, numRows, 2).getValues();
+  const colADisp = sheet.getRange(startRow, 1, numRows, 1).getDisplayValues();
 
-  let maxSuffix   = getMaxSuffix(sheet);
-  const tasks     = [];
+  let maxSuffix  = getMaxSuffix(sheet);
+  const tasks    = [];
 
-  // --- 第一階段：過濾待處理清單 ---
+  // Phase 1: Identify and Filter Pending Rows
   for (let i = 0; i < numRows; i++) {
     const currentRow = startRow + i;
     if (currentRow <= 1) continue;
@@ -82,11 +79,11 @@ function processCurrentRows() {
   }
 
   if (tasks.length === 0) {
-    SpreadsheetApp.getUi().alert("⚠️ No pending rows detected.");
+    SpreadsheetApp.getUi().alert("⚠️ No pending rows detected in the selection.");
     return;
   }
 
-  // --- 第二階段：資料轉換與自動化操作 ---
+  // Phase 2: Execution (Data Transformation & Folder Generation)
   const errors = [];
   const src    = CONFIG.sourceSheet;
 
@@ -96,20 +93,22 @@ function processCurrentRows() {
       const folderUrl = createFolderAndSheet(task.fullId, task.name, rows, totalAmount);
       const { k, l }  = resolvePaymentInfo(lookupMap[task.name]);
 
-      // 1. 回填序列號超連結 (連結至 Drive 資料夾)
+      // Write Serial ID with Hyperlink (Links directly to the generated Drive folder)
       sheet.getRange(task.row, 1).setFormula(
-        folderUrl ? `=HYPERLINK("${folderUrl}","${task.fullId}")` : String(task.fullId)
+        folderUrl
+          ? `=HYPERLINK("${folderUrl}","${task.fullId}")`
+          : String(task.fullId)
       );
 
-      // 2. 跨表資料比對與公式注入 (C～L 欄)
+      // Cross-sheet data matching and dynamic formula injection (Columns C to L)
       sheet.getRange(task.row, 3, 1, 10).setValues([[
-        `=IF(B${task.row}="","",IFERROR(VLOOKUP(TRIM(B${task.row}),'${src}'!B:D,3,0)&" and ${"COUNTIF"}"&COUNTIF('${src}'!B:B,TRIM(B${task.row}))&" Items","N/A"))`,
-        "(See Detailed List)",
+        `=IF(B${task.row}="","",IFERROR(VLOOKUP(TRIM(B${task.row}),'${src}'!B:D,3,0)&"等共"&COUNTIF('${src}'!B:B,TRIM(B${task.row}))&"案","無資料"))`,
+        "(詳見案件清冊)",
         `=IF(B${task.row}="",0,SUMIF('${src}'!B:B,TRIM(B${task.row}),'${src}'!G:G))`,
         "",
         `=IF(B${task.row}="","",IFERROR(VLOOKUP(TRIM(B${task.row}),'${src}'!B:I,8,0),""))`,
         userName,
-        false, false, // Status Checkboxes
+        false, false,
         k, l
       ]]);
 
@@ -117,35 +116,48 @@ function processCurrentRows() {
       sheet.getRange(task.row, 9, 1, 2).insertCheckboxes();
 
     } catch (e) {
-      errors.push(`Row ${task.row} (${task.name}): ${e.message}`);
+      errors.push(`第 ${task.row} 列（${task.name}）：${e.message}`);
     }
   }
 
+  // Final Execution Report
   if (errors.length > 0) {
-    SpreadsheetApp.getUi().alert(`⚠️ Errors occurred:\n\n${errors.join("\n")}`);
+    SpreadsheetApp.getUi().alert(
+      `⚠️ Partial processing errors：\n\n${errors.join("\n")}`
+    );
   } else {
-    SpreadsheetApp.getUi().alert(`✅ Processed ${tasks.length} rows successfully.`);
+    SpreadsheetApp.getUi().alert(`✅ Processed ${tasks.length} records successfully.`);
   }
 }
 
 // ============================================================
-//  🔧 工具函數區
+//  🔧  Utility Functions
 // ============================================================
 
+// Builds an in-memory Hash Map from external data for O(1) lookup performance
 function buildLookupMap() {
   try {
-    const data = SpreadsheetApp.openById(CONFIG.externalSsId).getSheetByName(CONFIG.externalSheet).getDataRange().getValues();
+    const data = SpreadsheetApp
+      .openById(CONFIG.externalSsId)
+      .getSheetByName(CONFIG.externalSheet)
+      .getDataRange().getValues();
+
     return data.slice(1).reduce((map, row) => {
       const name = row[2]?.toString().trim();
       if (name) map[name] = { type: row[7], address: row[8], email: row[9] };
       return map;
     }, {});
-  } catch (e) { return null; }
+  } catch (e) {
+    SpreadsheetApp.getUi().alert(`❌ Failed to read external database：${e.message}`);
+    return null;
+  }
 }
 
+// Scans Column A to determine the current maximum serial suffix
 function getMaxSuffix(sheet) {
   const lastRow = sheet.getLastRow();
   if (lastRow < 2) return CONFIG.startSuffix - 1;
+
   return sheet.getRange(2, 1, lastRow - 1, 1).getDisplayValues().flat()
     .filter(v => v.includes(CONFIG.idPrefix))
     .reduce((max, v) => {
@@ -154,6 +166,7 @@ function getMaxSuffix(sheet) {
     }, CONFIG.startSuffix - 1);
 }
 
+// Filters master data based on Client Name and calculates aggregate totals
 function filterSourceRows(sourceData, sourceHeaders, nameValue) {
   let totalAmount = 0;
   const header = CONFIG.exportCols.map(i => sourceHeaders[i]);
@@ -164,36 +177,73 @@ function filterSourceRows(sourceData, sourceHeaders, nameValue) {
       if (!isNaN(amt)) totalAmount += amt;
       return CONFIG.exportCols.map(i => row[i]);
     });
+
   return { rows: [header, ...dataRows], totalAmount };
 }
 
+// Creates a dedicated folder and a detailed manifest spreadsheet in Google Drive
 function createFolderAndSheet(fullId, nameValue, filteredRows, totalAmount) {
-  const targetFolder = DriveApp.getFolderById(CONFIG.parentFolderId).createFolder(`${fullId}_${nameValue}`);
-  if (filteredRows.length > 1) {
-    const newFile  = SpreadsheetApp.create(`${fullId}_Manifest`);
+  const totalCount  = filteredRows.length - 1;
+  const folderName  = `${fullId}_${nameValue}(${totalCount}in total)`;
+  const targetFolder = DriveApp.getFolderById(CONFIG.parentFolderId).createFolder(folderName);
+
+  if (totalCount > 0) {
+    const newFile  = SpreadsheetApp.create(folderName);
     const newSheet = newFile.getSheets()[0];
     newSheet.getRange(1, 1, filteredRows.length, filteredRows[0].length).setValues(filteredRows);
-    newSheet.getRange(filteredRows.length + 1, 6).setValue("Total");
+    newSheet.getRange(filteredRows.length + 1, 6).setValue("Total Amount");
     newSheet.getRange(filteredRows.length + 1, 7).setValue(totalAmount).setNumberFormat("#,##0");
     DriveApp.getFileById(newFile.getId()).moveTo(targetFolder);
   }
+
   return targetFolder.getUrl();
 }
 
+//Resolves payment method and routing information 
+
 function resolvePaymentInfo(info) {
   if (!info) return { k: "", l: "" };
-  if (info.type.includes("Digital")) return { k: info.email, l: "" };
-  if (info.type.includes("Paper"))   return { k: "Physical Mail", l: info.address };
+  if (info.type.includes("email")) return { k: info.email, l: "" };
+  if (info.type === "Physical")  return { k: "Physical Mail", l: info.address };
   return { k: "", l: "" };
 }
 
+//Identifies the current operator based on user login data
 function getCurrentUserName() {
   const email = Session.getEffectiveUser().getEmail().split('@')[0];
   return CONFIG.userList[email] || email;
 }
 
 // ============================================================
-//  📥 CSV 匯出引擎 (針對 Adobe Illustrator 變數資料優化)
+//  📮  ZipCode Sidebar UI
+// ============================================================
+function showSidebar() {
+  SpreadsheetApp.getUi().showSidebar(
+    HtmlService.createHtmlOutputFromFile('Sidebar')
+      .setTitle('📮 Zipcode Lookup Tool')
+      .setWidth(320)
+  );
+}
+
+function getSelectedCellInfo() {
+  const r = SpreadsheetApp.getActiveSheet().getActiveRange();
+  return { row: r.getRow(), col: r.getColumn(), address: String(r.getValue()) };
+}
+
+function writeZipCode(row, col, zipcode) {
+  SpreadsheetApp.getActiveSheet().getRange(row, col - 1).setValue(zipcode);
+}
+
+function fetchZipCode(address) {
+  const url  = 'https://zipcode.tw/' + encodeURIComponent(address);
+  const html = UrlFetchApp.fetch(url, { muteHttpExceptions: true }).getContentText('UTF-8');
+  const match = html.match(/3\+3[\s\S]*?(\d{6})/);
+  return match ? match[1] : null;
+}
+
+
+// ============================================================
+//  📥  CSV Export Engine (Optimized for Adobe Illustrator)
 // ============================================================
 function downloadIllustratorCSV() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -203,44 +253,63 @@ function downloadIllustratorCSV() {
   const numRows = range.getNumRows();
 
   if (startRow <= 1 && numRows === 1) {
-    SpreadsheetApp.getUi().alert("❌ Please select the data rows you wish to export.");
+    SpreadsheetApp.getUi().alert("❌ Selection Error: Please highlight data rows (excluding headers).");
     return;
   }
 
-  // Illustrator Schema: 14 定義欄位 (需與 AI 變數面板匹配)
+  // Illustrator Variables Schema: Must match the variable names in the AI Variables Panel
   const headers = [
-    "Client_Name_1", "Client_Name_2", "Approval_ID", "Capacity", 
+    "Client_Name_1", "Client_Name_2", "Case_ID", "Capacity", 
     "Amount_1", "Amount_2", "Account_ID_1", "Account_ID_2", 
-    "barcode1", "barcode2", "Fiscal_Period", "ZipCode", "Shipping_Address", "Issue_Date"
+    "barcode1", "barcode2", "Period", "ZipCode", "Shipping_Address", "Issue_Date"
   ];
 
-  // 使用 getDisplayValues() 確保純文字，防止科學記號 (e.g., 3.75E+09)
+  // 🛡️ Critical Optimization: Use getDisplayValues() to capture formatted strings.
+  // This prevents long IDs or large amounts from converting to scientific notation (e.g., 3.75E+09).
   const rawData = sheet.getRange(startRow, 1, numRows, 7).getDisplayValues();
   
-  let csvContent = "\ufeff"; // UTF-8 BOM
+  // Initialize CSV with UTF-8 BOM (\ufeff) to resolve character encoding issues in Adobe software
+  let csvContent = "\ufeff"; 
   csvContent += headers.map(h => `"${h}"`).join(",") + "\n";
 
+  // Data Transformation & Mapping
   for (let i = 0; i < rawData.length; i++) {
-    if (startRow + i === 1) continue; 
+    if (startRow + i === 1) continue; // Skip sheet header
     
+    // De-structure original columns: A:Account, B:Name, C:Info, D:Capacity, E:Amount, F:Zip, G:Address
     const [accId, name, info, cap, amt, zip, addr] = rawData[i];
-    const accStr = accId.toString().trim();
     
-    // 資料清洗與轉換邏輯
+    const accStr = accId.toString().trim();
+    // Business Logic: Extract last 11 digits for Barcode 1.
     const b1 = accStr.length >= 11 ? accStr.slice(-11) : accStr; 
+    // Business Logic: Sanitize amount for Barcode 2
     const b2 = amt.replace(/,/g, ''); 
 
+    // Mapping logic (1-to-Many mapping from Sheets to Illustrator Schema)
     const mappedRow = [
-      name, name, info, cap, amt, amt, accId, accId,
-      b1, b2, "FY2026_Services", zip, addr, ""
+      name,             // Client_Name_1
+      name,             // Client_Name_2
+      info,             // Case_ID
+      cap,              // Capacity
+      amt,              // Amount_1
+      amt,              // Amount_2
+      accId,            // Account_ID_1
+      accId,            // Account_ID_2
+      b1,               // barcode1
+      b2,               // barcode2
+      "", // Period
+      zip,              // Zipcode
+      addr,             // Shipping_Address
+      ""                // Issue_Date
     ];
 
     csvContent += mappedRow.map(cell => `"${cell.replace(/"/g, '""')}"`).join(",") + "\n";
   }
 
-  const fileName = "Export_AI_Variables_" + Utilities.formatDate(new Date(), "GMT+8", "MMdd_HHmm") + ".csv";
+  // Trigger Browser-side Download
+  const fileName = "AI_Final_" + Utilities.formatDate(new Date(), "GMT+8", "MMdd_HHmm") + ".csv";
   const base64 = Utilities.base64Encode(csvContent, Utilities.Charset.UTF_8);
-  const html = `<script>const a=document.createElement('a');a.href='data:text/csv;base64,${base64}';a.download='${fileName}';a.click();setTimeout(()=>google.script.host.close(),1500);</script><body style="font-family:sans-serif;text-align:center;">Preparing Download...</body>`;
+  const html = `<script>const a=document.createElement('a');a.href='data:text/csv;base64,${base64}';a.download='${fileName}';a.click();setTimeout(()=>google.script.host.close(),1500);</script><body style="font-family:sans-serif;text-align:center;">檔案產生中...</body>`;
   
-  SpreadsheetApp.getUi().showModalDialog(HtmlService.createHtmlOutput(html).setWidth(300).setHeight(150), "Exporting CSV");
+  SpreadsheetApp.getUi().showModalDialog(HtmlService.createHtmlOutput(html).setWidth(300).setHeight(150), "正在下載 CSV");
 }
