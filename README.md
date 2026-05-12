@@ -202,3 +202,9 @@ MIT License.
 This codebase has been de-identified for public sharing. All sheet names, folder IDs,
 spreadsheet IDs, and user references are placeholders — replace them with your own
 values before use.
+
+## 🤝 Acknowledgements
+
+Built with AI pair programming assistance from  
+[Claude](https://claude.ai/) (Anthropic) and [Gemini](https://gemini.google.com/) (Google).  
+Core system design, logic, and requirements by the author.
