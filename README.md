@@ -205,6 +205,5 @@ values before use.
 
 ## 🤝 Acknowledgements
 
-Built with AI pair programming assistance from  
-[Claude](https://claude.ai/) (Anthropic) and [Gemini](https://gemini.google.com/) (Google).  
+Built with AI pair programming assistance from [Claude](https://claude.ai/) (Anthropic) and [Gemini](https://gemini.google.com/) (Google).  
 Core system design, logic, and requirements by the author.
