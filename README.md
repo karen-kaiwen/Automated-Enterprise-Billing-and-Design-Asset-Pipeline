@@ -1,6 +1,6 @@
 # Automated Enterprise Billing & Design Asset Pipeline
 
-An end-to-end Google Apps Script system for Google Workspace that automates record matching, Drive folder generation, and CSV export for Adobe Illustrator variable data printing.
+Reduced a 1–2 week manual billing and asset management workflow (requiring overtime) to same-day completion. Built with Google Apps Script on Google Workspace — automating record matching, Drive folder generation, sequential ID assignment, and CSV export for Adobe Illustrator variable data printing.
 
 ![Google Apps Script](https://img.shields.io/badge/Google_Apps_Script-4285F4?style=flat&logo=google&logoColor=white)
 ![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)
